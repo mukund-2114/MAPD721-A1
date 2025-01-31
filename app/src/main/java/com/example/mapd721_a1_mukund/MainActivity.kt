@@ -10,17 +10,17 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mapd721_a1_mukund.ui.theme.MAPD721_A1_MukundTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,9 +37,18 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun MyApp() {
-    var id by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var courseName by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val scope = rememberCoroutineScope()
+    val store = UserStore(context)
+
+    var idValue by remember { mutableStateOf(TextFieldValue()) }
+    var usernameValue by remember { mutableStateOf(TextFieldValue()) }
+    var courseNameValue by remember { mutableStateOf(TextFieldValue()) }
+
+    val storedId = store.getID.collectAsState(initial = "")
+    val storedUsername = store.getUserName.collectAsState(initial = "")
+    val storedCourseName = store.getCourseName.collectAsState(initial = "")
 
     Column(
         modifier = Modifier
@@ -49,22 +58,22 @@ fun MyApp() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
-            value = id,
-            onValueChange = { id = it },
+            value = idValue,
+            onValueChange = { idValue = it },
             label = { Text("ID") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
-            value = username,
-            onValueChange = { username = it },
+            value = usernameValue,
+            onValueChange = { usernameValue = it },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
-            value = courseName,
-            onValueChange = { courseName = it },
+            value = courseNameValue,
+            onValueChange = { courseNameValue = it },
             label = { Text("Course Name") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -74,40 +83,58 @@ fun MyApp() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             OutlinedButton(
-                onClick = { },
+                onClick = {
+                    idValue = TextFieldValue(storedId.value)
+                    usernameValue = TextFieldValue(storedUsername.value)
+                    courseNameValue = TextFieldValue(storedCourseName.value)
+                },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color(255, 179, 0, 121),
                     contentColor = Color(0,0,0),
-
                 ),
             ) {
                 Text("Load")
             }
             OutlinedButton(
-                onClick = { },
+                onClick = {
+                    scope.launch {
+                        store.saveID(idValue.text)
+                        store.saveUserName(usernameValue.text)
+                        store.saveCourseName(courseNameValue.text)
+                    }
+                    keyboardController?.hide()
+                },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color(124, 179, 66, 134),
                     contentColor = Color(0,0,0),
-
-                    ),
+                ),
             ) {
                 Text("Store")
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedButton(onClick = { },
+        OutlinedButton(
+            onClick = {
+                idValue = TextFieldValue("")
+                usernameValue = TextFieldValue("")
+                courseNameValue = TextFieldValue("")
+                scope.launch {
+                    store.saveID("")
+                    store.saveUserName("")
+                    store.saveCourseName("")
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color(229, 57, 53, 136),
                 contentColor = Color(0,0,0),
-
-                ),
+            ),
         ) {
             Text("Reset")
         }
