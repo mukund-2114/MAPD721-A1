@@ -42,11 +42,11 @@ fun MyApp() {
     val scope = rememberCoroutineScope()
     val store = UserStore(context)
 
-    var idValue by remember { mutableStateOf(TextFieldValue()) }
+    var idValue by remember { mutableStateOf(TextFieldValue("876")) }
     var usernameValue by remember { mutableStateOf(TextFieldValue()) }
     var courseNameValue by remember { mutableStateOf(TextFieldValue()) }
 
-    val storedId = store.getID.collectAsState(initial = "")
+    val storedId = store.getID.collectAsState(initial = "125")
     val storedUsername = store.getUserName.collectAsState(initial = "")
     val storedCourseName = store.getCourseName.collectAsState(initial = "")
 

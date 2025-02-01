@@ -22,7 +22,7 @@ class UserStore(private val context: Context) {
     }
 
     val getUserName: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[USER_NAME_KEY] ?: "Welcome"
+        preferences[USER_NAME_KEY] ?: ""
     }
 
     val getCourseName: Flow<String> = context.dataStore.data.map { preferences ->
